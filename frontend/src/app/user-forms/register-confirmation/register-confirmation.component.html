@@ -1,0 +1,17 @@
+<div class="container-user-forms">
+    <mat-card>
+        <mat-card-title>Registration confirmation</mat-card-title>
+        <mat-card-content>
+            <ng-template [ngIf]="confirm_ok">
+                <div class="form-wide-success" >
+                    Welcome onboard!<br />
+                    Your account with email <b>{{email}}</b> has been activated.<br /><br />
+                    
+                    Sincerely,<br />
+                    Staff
+                </div>
+            </ng-template>
+
+        </mat-card-content>
+    </mat-card>
+</div>

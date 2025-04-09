@@ -1,0 +1,7 @@
+pytz
+django
+djangorestframework
+gunicorn
+psycopg2
+django-cors-headers
+django-filter

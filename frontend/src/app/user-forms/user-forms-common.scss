@@ -1,0 +1,85 @@
+@use '@angular/material' as mat;
+$theme: mat.define-theme();
+
+
+/* --------------- mixins ------------------ */
+@mixin mat-form-field-full-width {
+    width: 100%;
+}
+
+@mixin mat-form-field-common {
+    margin-bottom: 20px;
+}
+
+@mixin mat-form-field-last-of-type { 
+    margin-bottom: 0;
+    padding-bottom:0;
+}
+
+@mixin mat-card-common {
+    width: 30%;
+    padding: 10px;
+}
+
+@mixin mat-card-common-full-width {
+    width: 100%;
+    padding: 10px;
+}
+
+
+@mixin button-style-main {
+    @include mat.button-color($theme, $color-variant: primary);
+}
+
+@mixin button-style-other {
+    @include mat.button-color($theme, $color-variant: error);
+
+}
+
+/* --------------- /mixins ------------------ */
+
+
+.container-user-forms {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}   
+    
+
+.form-wide-errors {
+    color: #ba1a1a;
+    font-size: 14px;
+    // border: 1px solid red;
+    // margin-bottom: 10px;
+}
+
+.form-wide-success {
+    color: blue;
+    font-size: 14px;
+    margin-bottom: 10px;
+    // border: 1px solid red;
+    // margin-bottom: 10px;
+}
+
+
+mat-card mat-card-content {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    // padding: 20px 0px 0px 0px;
+    padding: 20px;
+}
+
+
+mat-card mat-form-field {
+    @include mat-form-field-full-width();
+    @include mat-form-field-common();
+}
+
+
+.buttons {
+    display: flex;
+    justify-content: space-between;
+}
+
+

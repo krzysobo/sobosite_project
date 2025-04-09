@@ -1,0 +1,15 @@
+<div class="dialog-box">
+  <h2 mat-dialog-title>Delete user account</h2>
+  
+  <mat-dialog-content style="height: 50%"> 
+    <p style="font-size:16px;">Are you sure that you want to delete the following user account:</p>
+    <p style="text-align: center; font-size:17px; font-weight: bold;">
+      {{ first_name }} {{last_name}} ({{ email }})
+    </p>
+    <p style="font-weight: bold; text-decoration: underline; font-size: 20px;">This operation can't be undone!</p>
+  </mat-dialog-content>
+  <mat-dialog-actions>
+    <button mat-button mat-dialog-close>NO</button>
+    <button mat-button mat-dialog-close cdkFocusInitial (click)="confirm();">YES</button>
+  </mat-dialog-actions>
+</div>

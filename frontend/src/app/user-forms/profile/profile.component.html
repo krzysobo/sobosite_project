@@ -1,0 +1,54 @@
+<div class="container-user-forms">
+    <mat-card>
+        <mat-card-title>My Profile</mat-card-title>
+        <mat-card-content>
+            <form [formGroup]="form" (ngSubmit)="submit_form()">
+
+                <mat-form-field>
+                    <mat-label>First name</mat-label>
+                    <input matInput placeholder="Input your first name." formControlName="first_name">
+                </mat-form-field>
+
+                <mat-form-field>
+                    <mat-label>Last name</mat-label>
+                    <input matInput placeholder="Input your last name." formControlName="last_name">
+                </mat-form-field>
+
+                <mat-form-field>
+                    <mat-label>E-mail</mat-label>
+                    <input matInput placeholder="Input your e-mail." formControlName="email" email="true" required>
+                    <mat-error>
+                        A valid e-mail address is required.
+                    </mat-error>
+                </mat-form-field>
+
+                <ng-template [ngIf]="form.touched && is_email_already_taken">
+                    <div class="form-wide-errors" >
+                        E-mail is already taken.
+                    </div>
+                </ng-template>
+
+                <ng-template [ngIf]="form.touched && is_network_error">
+                    <div class="form-wide-errors" >
+                        Network or authentication error.
+                    </div>
+                </ng-template>
+
+                <ng-template [ngIf]="form.touched && is_profile_updated_ok">
+                    <div class="form-wide-success" >
+                        Profile has been updated.
+                    </div>
+                </ng-template>
+
+
+                <div class="buttons">
+                    <button class="ok" mat-raised-button type="submit" [disabled]="!form.valid">Update Profile</button>
+                    <a class="change-pass" mat-raised-button  routerLink="/profile/change-password">Change Password</a>
+                </div>
+
+            </form>
+        </mat-card-content>
+
+
+    </mat-card>
+</div>

@@ -1,0 +1,45 @@
+
+<style>
+</style>
+
+
+<div class="app-container">
+  <div class="app-header">
+    <nav>
+      <ul>
+        <li><a mat-button routerLink="/home" routerLinkActive="active-main-menu-link">Home</a></li>
+
+        
+        <ng-template [ngIf]="is_user_logged" [ngIfElse]="not_logged">
+          <li><a mat-button routerLink="/profile" routerLinkActive="active-main-menu-link">Profile</a></li>
+          <ng-template [ngIf]="is_user_logged_and_admin">
+          <li><a mat-button routerLink="/admin/users" routerLinkActive="active-main-menu-link">Users</a></li>
+          </ng-template>
+          <li><a mat-button (click)="log_out();">Log Out</a></li>
+        </ng-template>
+
+        <ng-template #not_logged>
+          <li ><a mat-button routerLink="/login" routerLinkActive="active-main-menu-link">Login</a></li>
+          <li><a mat-button routerLink="/register" routerLinkActive="active-main-menu-link">Register</a></li>
+        </ng-template>
+
+        <!-- <li><a mat-button routerLink="/change-password" routerLinkActive="active-main-menu-link">Change password</a></li> -->
+      </ul>
+    </nav>
+  </div>
+
+  <div class="app-main">
+    <router-outlet />
+  </div>
+
+  <div class="app-footer">
+    <div class="footer-nav">
+      <ul>
+        <li><a routerLink="/about-us">About Us</a></li>
+        <li><a routerLink="/cookies">Cookies</a></li>
+        <li><a routerLink="/privacy-policy">Privacy Policy</a></li>
+      </ul>
+    </div>
+  </div>
+</div>
+

@@ -1,0 +1,76 @@
+@mixin reset-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  
+  @mixin horizontal-list {
+    @include reset-list;
+  
+    li {
+      display: inline-block;
+      margin: {
+        left: -2px;
+        right: 2em;
+      }
+    }
+  }
+
+
+ 
+  .app-container {
+    display: grid;
+    grid-template-columns: 250px 1fr 220px;
+    grid-template-rows: auto 1fr auto;
+    grid-gap: 20px;
+    grid-template-areas: 
+    "header header header"
+    "content content content"
+    // "nav-left content side"
+    "footer footer footer";
+    height: 100vh;
+    padding: 20px 10px 0px 50px;
+
+    background-color: #f0f0f0;
+  }
+
+  .app-header{
+    grid-area: header;
+    //border: 1px solid blue;
+
+    // border-bottom: 1px dashed gray;
+    padding: 5px 5px 5px 10px;
+    background-color: white;
+    nav ul {
+      @include horizontal-list();
+    }
+ 
+    
+   .active-main-menu-link{
+      font-weight: bold;
+      color: black;
+   }
+  }
+
+
+  
+
+  .app-footer {
+    grid-area: footer;
+    border: 1px solid blue;
+    padding: 5px 10px 10px 10px;
+
+    .footer-nav ul {
+      @include horizontal-list();
+    }
+
+  }
+
+  .app-main {
+    grid-area: content;
+    border: 1px solid blue;
+    padding: 10px;
+
+  }
+
+
