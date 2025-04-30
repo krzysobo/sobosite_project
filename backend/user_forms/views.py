@@ -47,6 +47,7 @@ class Login(APIView):
                 "first_name": user.first_name,
                 "last_name": user.last_name,
                 "is_staff": user.is_staff,
+                # "is_active": user.is_active,
             }
             print("\n\nRES::: ", res, "aaaaa\n\n")
             return Response(res, status=200)

@@ -2,7 +2,8 @@ import { Injectable } from '@angular/core';
 import { UserModel } from '../../_models/UserModel';
 import { FakeAuthService } from './fake-auth.service';
 import { RealAuthService } from './real-auth.service';
-import { LocalStorageService } from './local-storage.service';
+import { LocalStorageService } from '../../../sobo-common/_utils/services/local-storage.service';
+
 import { UniResponse } from '../http/uniresponse'
 import { BehaviorSubject, Observable, of } from 'rxjs';
 import { ProfileOwnResponse, ResponseUtils } from '../http/responses';
@@ -19,7 +20,7 @@ export class UserStateService {
   private last_action_details: BehaviorSubject<any>;
 
   constructor(
-        private authService: FakeAuthService, 
+        private authService: FakeAuthService,
         private authServiceReal: RealAuthService,
         private localStorageService: LocalStorageService,
         private router: Router) {
@@ -37,7 +38,7 @@ export class UserStateService {
   public log_out(): BehaviorSubject<string> {
     console.log ("====== LOG OUT!!! ");
     const token = this.get_current_token();
-    
+
     if (!this._fake_mode) {
       this.authServiceReal.log_out(token).subscribe({
         next: (resp) => {
@@ -47,7 +48,7 @@ export class UserStateService {
           this._set_current_user(null);
           this._set_is_logged(false);
           this.is_logged_subb.next(false);
-      
+
           this.router.navigateByUrl("/login");
         },
         error: (resp) => {
@@ -86,7 +87,7 @@ export class UserStateService {
       }
       // e-mail was not changed, don't update it
       if ((email != current_user.email)) {
-        const resp = this.authService.update_user_email(current_user.id, current_user.email, 
+        const resp = this.authService.update_user_email(current_user.id, current_user.email,
           email, token);
         console.log("=== RESP ", resp);
         if ((resp.code == 1)  && (resp.data_json_as_obj != undefined) && (resp.data_json_as_obj != null)) {
@@ -97,7 +98,7 @@ export class UserStateService {
       }
       this.set_last_action("PROFILE_UPDATE_OK");
     } else {
-      this.authServiceReal.profile_own_update(token, email, first_name, last_name).subscribe({        
+      this.authServiceReal.profile_own_update(token, email, first_name, last_name).subscribe({
           next: (resp) => {
             console.log("REAL - UPDATE_PROFILE", resp);
             const ownResp = resp.body as ProfileOwnResponse;
@@ -133,9 +134,9 @@ export class UserStateService {
       const current_user = this.get_current_user();
       if((current_user == undefined) || (current_user == null) || (current_user.empty )) {
         throw new RangeError("User not defined");
-      }  
-      const resp = this.authService.update_user_password(current_user.id, current_user.email, 
-        current_password_to_check, new_password, this.get_current_token());  
+      }
+      const resp = this.authService.update_user_password(current_user.id, current_user.email,
+        current_password_to_check, new_password, this.get_current_token());
       console.log("=== RESP ", resp);
       if ((resp.code == UniResponse.CODE_OK)  && (resp.data_json_as_obj != undefined) && (resp.data_json_as_obj != null)) {
         const updated_user = resp.data_json_as_obj;
@@ -157,13 +158,13 @@ export class UserStateService {
         },
         complete: () => {}
       }
-        
-        
-    
+
+
+
     );
     }
 
-    return this.get_last_action();   
+    return this.get_last_action();
   }
 
 
@@ -171,8 +172,8 @@ export class UserStateService {
     if (this.is_fake_mode) {
       const resp = this.authService.log_in(email, password);
       console.log("==== login-1 - user resp", resp  );
-  
-      if ((resp.code == UniResponse.CODE_OK) && (resp.http_code == UniResponse.HTTP_CODE_200_OK) && 
+
+      if ((resp.code == UniResponse.CODE_OK) && (resp.http_code == UniResponse.HTTP_CODE_200_OK) &&
             (resp.data_json_as_obj != undefined) &&  (resp.data_json_as_obj != null) && (!resp.data_json_as_obj.empty)) {
         this._set_is_logged(true);
         this._set_current_user(resp.data_json_as_obj);
@@ -199,7 +200,7 @@ export class UserStateService {
           error: (resp) => {
             console.log("LOGIN ERROR ", resp);
             this.set_last_action("LOGIN_ERROR");
-          }, 
+          },
           complete: () => {}
       });
     }
@@ -232,7 +233,7 @@ export class UserStateService {
           console.log("REGISTER -- REGISTER ERROR ", data);
           const error_details = this._gather_error_details(data);
           console.log("ERROR DETAILS ", error_details);
-        
+
           if (ResponseUtils.resp_error_email_already_taken(data)) {
             this.set_last_action("REGISTER_ERROR_ALREADY_EXISTS");
           } else {
@@ -244,7 +245,7 @@ export class UserStateService {
           console.log("REGISTER -- COMPLETE ");
         }
       });
-        
+
       //   {resp => {
       //   console.log("REAL - REGISTRATION ", resp);
       //   this.set_last_action("REGISTER_OK");
@@ -253,7 +254,7 @@ export class UserStateService {
       //   console.log("REGISTER ERROR ")
       //   this.set_last_action("REGISTER_ERROR");
       // }
-    
+
     }
 
     return this.get_last_action();
@@ -277,8 +278,8 @@ export class UserStateService {
           },
 
           complete: () => {}
-        }        
-    
+        }
+
     );
     }
 
@@ -321,10 +322,10 @@ export class UserStateService {
         complete: () => {}
       });
     }
-    
+
     return this.get_last_action();
   }
-  
+
 
   // ===== state storage handling =====
   public is_logged(): boolean {
@@ -356,7 +357,7 @@ export class UserStateService {
   private _set_is_logged(is_logged: boolean) {
     this.localStorageService.set_item_from_boolean("is_logged", is_logged);
   }
- 
+
   public get_current_user(): UserModel|null {
     const user_in = this.localStorageService.get_object_from_item("current_user");
     // console.log("GET CURRENT USER --- ", user_in);

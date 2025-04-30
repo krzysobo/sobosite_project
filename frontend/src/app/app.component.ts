@@ -7,6 +7,7 @@ import { UserStateService } from './user-forms/_utils/services/user-state-servic
 import { CommonModule } from '@angular/common';
 import { BrowserModule } from "@angular/platform-browser";
 
+import { SoboCommonModule } from './sobo-common/sobo-common.module';
 import { UserFormsModule } from './user-forms/user-forms.module';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
@@ -16,7 +17,7 @@ import { MatInputModule } from '@angular/material/input';
   selector: 'app-root',
   standalone: true,
   imports: [CommonModule,  RouterOutlet, RouterLink, RouterLinkActive, MatButtonModule, UserFormsModule,
-    MatCardModule, MatInputModule,  FormsModule, ReactiveFormsModule, 
+    MatCardModule, MatInputModule,  FormsModule, ReactiveFormsModule,
 
   ],
   templateUrl: './app.component.html',
