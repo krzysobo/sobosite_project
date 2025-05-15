@@ -29,29 +29,41 @@ DEBUG = True
 # ALLOWED_HOSTS = []
 DOMAIN = os.environ.get("BACKEND_DOMAIN", "example.com")
 
-ALLOWED_HOSTS = [
-    DOMAIN, 
-    f"{DOMAIN}:8000", 
-    f"{DOMAIN}:3000", 
-    f"{DOMAIN}:4200",
-    'localhost', 
-    'localhost:8000', 
-    'localhost:3000', 
-    'localhost:4200', 
-    '*']
+x_allowed_hosts_backend = [DOMAIN, 'krzysztofsobolewski.info', 'localhost', '127.0.0.1']
+x_allowed_ports_backend = [80, 8000,9000, 3000]
 
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost",
-    "http://localhost:4200",
-    "http://localhost:8000",
-    "http://localhost:3030",
-    "http://localhost:3000",
-    "http://127.0.0.1",
-    "http://127.0.0.1:4200",
-    "http://127.0.0.1:8000",
-    "http://127.0.0.1:3030",
-    "http://127.0.0.1:3000",
-]
+x_allowed_origins_frontend = ['localhost', '127.0.0.1', 'krzysztofsobolewski.info']
+x_allowed_ports_frontend_cors = [80, 4200, 4400, 3030,3000]
+
+
+
+ALLOWED_HOSTS = []
+CORS_ALLOWED_ORIGINS = []
+
+protocols = ['http://', 'https://']
+
+for host in x_allowed_hosts_backend:
+    ALLOWED_HOSTS.append(host)
+    for protocol in protocols:
+        ALLOWED_HOSTS.append(f"{protocol}{host}")
+        for port in x_allowed_ports_backend:
+            ALLOWED_HOSTS.append(f"{protocol}{host}:{port}")
+
+for origin in x_allowed_origins_frontend:
+    CORS_ALLOWED_ORIGINS.append(origin)
+    for protocol in protocols:
+        CORS_ALLOWED_ORIGINS.append(f"{protocol}{origin}")
+        for port in x_allowed_ports_frontend_cors:
+            CORS_ALLOWED_ORIGINS.append(f"{protocol}{origin}:{port}")
+
+
+# ALLOWED_HOSTS = ['example.com', 'example.com:80', 'example.com:8000', 'example.com:9000', 'example.com:3000', 'krzysztofsobolewski.info', 'krzysztofsobolewski.info:80', 'krzysztofsobolewski.info:8000', 'krzysztofsobolewski.info:9000', 'krzysztofsobolewski.info:3000', 'localhost', 'localhost:80', 'localhost:8000', 'localhost:9000', 'localhost:3000', '127.0.0.1', '127.0.0.1:80', '127.0.0.1:8000', '127.0.0.1:9000', '127.0.0.1:3000']
+# CORS_ALLOWED_ORIGINS =  ['localhost', 'localhost:80', 'localhost:4200', 'localhost:4400', 'localhost:3030', 'localhost:3000', '127.0.0.1', '127.0.0.1:80', '127.0.0.1:4200', '127.0.0.1:4400', '127.0.0.1:3030', '127.0.0.1:3000', 'krzysztofsobolewski.info', 'krzysztofsobolewski.info:80', 'krzysztofsobolewski.info:4200', 'krzysztofsobolewski.info:4400', 'krzysztofsobolewski.info:3030', 'krzysztofsobolewski.info:3000']
+
+
+
+print("\n\nALLOWED_HOSTS ", ALLOWED_HOSTS)
+print("\n\nCORS_ALLOWED_ORIGINS ", CORS_ALLOWED_ORIGINS)
 
 # CORS_ALLOW_ALL_ORIGINS=True
 # Application definition

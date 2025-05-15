@@ -31,7 +31,7 @@ class Login(APIView):
     permission_classes = []
 
     def post(self, request, format=None):
-        print("aaaaaaa")
+        print("\n aaaaaaa, request", request.data, "\n\n")
         ser = sers.LoginSerializer(data=request.data)
         ser.is_valid(raise_exception=True)
 
@@ -58,6 +58,7 @@ class Login(APIView):
 class Logout(APIView):
     permission_classes = [perms.PermIsAuth]
     def post(self, request, format=None):
+        print("\n\n========== LOGOUT REQUEST ", request)
         utils.UserFormsAuth.log_out(request)
         
         return Response({}, 200)
