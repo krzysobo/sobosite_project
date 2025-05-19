@@ -7,9 +7,13 @@ import datetime as dt
 from django.shortcuts import render
 from django.core.exceptions import PermissionDenied
 from rest_framework.authtoken.models import Token
+from rest_framework.response import Response
+
 import user_forms.serializers as sers
 import user_forms.models as models
 import user_forms.utils as utils 
+
+
 # import pytz
 # from django.http import Http404, JsonResponse
 # from django.contrib.auth import get_user_model, update_session_auth_hash
@@ -19,6 +23,24 @@ import user_forms.utils as utils
 # from rest_framework import status
 # import user_forms.perms as perms 
 from django.conf import settings
+
+
+def uni_response(data={}, errors={}, status=200): 
+    return Response({"data": data, "errors": errors}, status=status)
+
+
+def serialize_error_data(serializer_errors):
+    errors_out = {}
+    all_error_codes = set()
+    for err_group in serializer_errors:
+        err_list_serialized = []
+        for err_item in serializer_errors[err_group]:
+            print(f"ERR group {err_group} item: code: {err_item.code} item: ", str(err_item))
+            err_list_serialized.append((err_item.code, str(err_item)))
+            all_error_codes.add(err_item.code)
+        errors_out[err_group] = err_list_serialized    
+    return {"codes": all_error_codes, "errors": errors_out}
+
 
 class MailSender:
     SITE_URL_BACKEND = "http://localhost:3000/api/v1/"
@@ -143,13 +165,20 @@ class UserFormsAuth:
             request.user.auth_token.delete()
             request.auth = None 
             request.user = None 
+        return utils.uni_response()
 
 
 class UserFormsRegister:
     @staticmethod
     def register(data):
         ser = sers.UserRegisterSerializer(data=data)
-        ser.is_valid(raise_exception=True)
+
+        res = ser.is_valid(raise_exception=False)
+        if not res:
+            errors_out = serialize_error_data(ser.errors)
+            print("errors out ", errors_out)
+            status = 403 if "unique" in errors_out["codes"] else 400
+            return utils.uni_response({"errors": errors_out}, status=status)
 
         token = utils.Security.generate_register_activation_token()
 
@@ -160,7 +189,11 @@ class UserFormsRegister:
         user.register_activation_token = token
         user.save()
         utils.MailSender().send_registration_mail(ser.validated_data['email'], user)
-        return user
+        
+        return utils.uni_response(data={
+                ser.validated_data['email'],
+                ser.validated_data['first_name'],
+                ser.validated_data['last_name']})
     
     @staticmethod
     def register_confirm(email: str, register_activation_token: str):
@@ -169,10 +202,11 @@ class UserFormsRegister:
             user.register_activation_token = None
             user.is_active=True
             user.save()
+            return utils.uni_response()
         except(models.User.DoesNotExist):
-            raise PermissionDenied()
+            return utils.uni_response(errors={"_": [('user_does_not_exist',"User does not exist")]}, status=403)
         except(Exception):
-            raise PermissionDenied()
+            return utils.uni_response(errors={"_": [('user_does_not_exist',"User does not exist")]}, status=403)
 
 
 class ProfileUtils:
@@ -180,16 +214,23 @@ class ProfileUtils:
     def update_profile(user, data) -> sers.UserSerializerForUserPanelsReadOnly:
         ser = sers.UserSerializerForUserPanels(user, 
             data=data, partial=False, context={'user': user})
-        ser.is_valid(raise_exception=True)
+        res = ser.is_valid(raise_exception=False)
+        if not res:
+            return uni_response(errors=serialize_error_data(ser.errors), status=400)
+
         instance = ser.save()
-        return sers.UserSerializerForUserPanelsReadOnly(instance)
+        return uni_response(data=sers.UserSerializerForUserPanelsReadOnly(instance))
 
     def change_password(user, data):
         ser = sers.ChangePasswordSerializer(data=data, context={'user': user})
-        ser.is_valid(raise_exception=True)
+        res = ser.is_valid(raise_exception=False) 
+        if not res:
+            return uni_response(errors=serialize_error_data(ser.errors), status=400)
 
         user.set_password(ser.validated_data['new_password'])
         user.save()
+
+        return utils.uni_response()
 
 
 class ResetPasswordUtils:
@@ -202,17 +243,21 @@ class ResetPasswordUtils:
             print("\n val data ", ser.validated_data, "\n\n")
             user = models.User.objects.get(email=ser.validated_data['email'])
             print("USER ", user)
+
             assert user.is_active
+
             user.password_reset_token = utils.Security.generate_password_reset_token()
             user.password_reset_token_valid_thru = dt.datetime.now(dt.UTC) + dt.timedelta(minutes=30)
             user.save()
             utils.MailSender().send_password_reset_mail(ser.validated_data['email'], user)
+            
+            return utils.uni_response()
         except(models.User.DoesNotExist):
-            raise PermissionDenied()
+            return utils.uni_response(errors={"_": [('password_reset_error', 'password_reset_error')]}, status=403)
         except(AssertionError):
-            raise PermissionDenied()
+            return utils.uni_response(errors={"_": [('password_reset_error', 'password_reset_error')]}, status=403)
         except(Exception):
-            raise PermissionDenied()
+            return utils.uni_response(errors={"_": [('password_reset_error', 'password_reset_error')]}, status=403)
 
     def reset_password_confirm(user, data, email, token):
         ser = sers.ResetPasswordConfirmSerializer(data=data)
@@ -225,10 +270,15 @@ class ResetPasswordUtils:
             user.password_reset_token = None
             user.password_reset_token_valid_thru = None
             user.save()
+
+            return utils.uni_response()
         except(models.User.DoesNotExist):
-            raise PermissionDenied()
+            return utils.uni_response(errors={"_": [
+                ('password_reset_confirm_error', 'password_reset_confirm_error')]}, status=403)
         except(AssertionError):
-            raise PermissionDenied()
+            return utils.uni_response(errors={"_": [
+                ('password_reset_confirm_error', 'password_reset_confirm_error')]}, status=403)
         except(Exception):
-            raise PermissionDenied()
+            return utils.uni_response(errors={"_": [
+                ('password_reset_confirm_error', 'password_reset_confirm_error')]}, status=403)
 

@@ -21,7 +21,6 @@ from .exceptions import Conflict409Exception
 def xxx():   # just for testing
     return {"hello": "world"}
 
-
 # ------------------------------------- views -----------------------------------
 
 
@@ -50,18 +49,17 @@ class Login(APIView):
                 # "is_active": user.is_active,
             }
             print("\n\nRES::: ", res, "aaaaa\n\n")
-            return Response(res, status=200)
+            return Response({"data": res}, status=200)
 
-        return Response({}, status=403)
+        
+        return utils.uni_response(errors={"_": [("login_error", "Bad credentials")]}, status=403)
     
 
 class Logout(APIView):
     permission_classes = [perms.PermIsAuth]
     def post(self, request, format=None):
         print("\n\n========== LOGOUT REQUEST ", request)
-        utils.UserFormsAuth.log_out(request)
-        
-        return Response({}, 200)
+        return utils.UserFormsAuth.log_out(request)
 
 
 class ProfileOwn(APIView):
@@ -72,29 +70,27 @@ class ProfileOwn(APIView):
 
     def get(self, request, format=None):
         obj = self.get_object_or_not_found()
-        return Response(sers.UserSerializerForUserPanelsReadOnly(obj).data)
+        return utils.uni_response(data=sers.UserSerializerForUserPanelsReadOnly(obj).data)
 
     def put(self, request, format=None):
         ser = utils.ProfileUtils.update_profile(request.user, request.data)
         # print(" REQUEST USER NOW ", request.user, request.user.email, request.user.first_name, request.user.last_name, 
         #     request.user.role, request.user.status, request.user.is_staff)
-        return Response(ser.data)
+        return utils.uni_response(data=ser.data)
     
 
 class ProfileOwnChangePassword(APIView):
     permission_classes = [perms.PermIsAuth]
 
     def post(self, request, format=None):
-        utils.ProfileUtils.change_password(request.user, request.data)
-        return Response({})
+        return utils.ProfileUtils.change_password(request.user, request.data)
    
 
 class Register(APIView):
     permission_classes=[]
     
     def post(self, request, format=None):
-        user = utils.UserFormsRegister.register(self.request.data)
-        return Response({"email": user.email, "first_name": user.first_name, "last_name": user.last_name})
+        return utils.UserFormsRegister.register(self.request.data)
 
     
 class RegisterConfirm(APIView):
@@ -102,26 +98,18 @@ class RegisterConfirm(APIView):
 
     def get(self, request, email, token, format=None):
         """ confirm - "get" because we usually use a link from email """
-        utils.UserFormsRegister.register_confirm(email, token)
-        return Response({})
+        return utils.UserFormsRegister.register_confirm(email, token)
 
 
 class ResetPassword(APIView):
     permission_classes = []
 
     def post(self, request, format=None):
-        """ send request"""
-        try:
-            utils.ResetPasswordUtils.reset_password(request.user, request.data)
-        except(PermissionDenied):  # security measure to prevent non-users from checking, who is registered here
-            pass 
-
-        return Response({})
+        return utils.ResetPasswordUtils.reset_password(request.user, request.data)
  
 
 class ResetPasswordConfirm(APIView):
     permission_classes = []
 
     def post(self, request, email, token, format=None):
-        utils.ResetPasswordUtils.reset_password_confirm(request.user, request.data, email, token)
-        return Response({})
+        return utils.ResetPasswordUtils.reset_password_confirm(request.user, request.data, email, token)
