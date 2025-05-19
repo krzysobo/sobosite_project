@@ -73,10 +73,7 @@ class ProfileOwn(APIView):
         return utils.uni_response(data=sers.UserSerializerForUserPanelsReadOnly(obj).data)
 
     def put(self, request, format=None):
-        ser = utils.ProfileUtils.update_profile(request.user, request.data)
-        # print(" REQUEST USER NOW ", request.user, request.user.email, request.user.first_name, request.user.last_name, 
-        #     request.user.role, request.user.status, request.user.is_staff)
-        return utils.uni_response(data=ser.data)
+        return utils.ProfileUtils.update_profile(request.user, request.data)
     
 
 class ProfileOwnChangePassword(APIView):

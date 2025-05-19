@@ -189,7 +189,7 @@ class UserFormsRegister:
         user.register_activation_token = token
         user.save()
         utils.MailSender().send_registration_mail(ser.validated_data['email'], user)
-        
+
         return utils.uni_response(data={
                 ser.validated_data['email'],
                 ser.validated_data['first_name'],
@@ -211,7 +211,7 @@ class UserFormsRegister:
 
 class ProfileUtils:
     @staticmethod
-    def update_profile(user, data) -> sers.UserSerializerForUserPanelsReadOnly:
+    def update_profile(user, data) -> any:
         ser = sers.UserSerializerForUserPanels(user, 
             data=data, partial=False, context={'user': user})
         res = ser.is_valid(raise_exception=False)
@@ -219,7 +219,7 @@ class ProfileUtils:
             return uni_response(errors=serialize_error_data(ser.errors), status=400)
 
         instance = ser.save()
-        return uni_response(data=sers.UserSerializerForUserPanelsReadOnly(instance))
+        return uni_response(data=sers.UserSerializerForUserPanelsReadOnly(instance).data)
 
     def change_password(user, data):
         ser = sers.ChangePasswordSerializer(data=data, context={'user': user})
