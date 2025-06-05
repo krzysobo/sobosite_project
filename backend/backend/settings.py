@@ -31,11 +31,11 @@ DEBUG = True
 # ALLOWED_HOSTS = []
 DOMAIN = os.environ.get("BACKEND_DOMAIN", "example.com")
 
-x_allowed_hosts_backend = [DOMAIN, 'krzysztofsobolewski.info', 'localhost', '127.0.0.1', '192.168.1.177']
-x_allowed_ports_backend = [80, 8000,9000, 3000]
+x_allowed_hosts_backend = [DOMAIN, 'krzysztofsobolewski.info', 'sobosite.krzysztofsobolewski.info' 'localhost', '127.0.0.1', '192.168.1.177']
+x_allowed_ports_backend = [80, 8000,9000, 9010, 3000]
 
 x_allowed_origins_frontend = ['localhost', '127.0.0.1', 'krzysztofsobolewski.info']
-x_allowed_ports_frontend_cors = [80, 4200, 4400, 3030,3000]
+x_allowed_ports_frontend_cors = [80, 4200, 4400, 3030, 3000, 9000, 9030]
 
 
 
