@@ -13,6 +13,9 @@ import user_forms.serializers as sers
 import user_forms.models as models
 import user_forms.utils as utils 
 
+# https://github.com/hyperledger-labs/did-webs-resolver/pull/73
+# safe_utc = dt.UTC
+safe_utc = dt.timezone.utc
 
 # import pytz
 # from django.http import Http404, JsonResponse
@@ -167,7 +170,7 @@ class UserFormsAuth:
             user = models.User.objects.get(**{models.User.USERNAME_FIELD: username})
             assert user.is_active
             assert user.check_password(password)
-            user.last_login = dt.datetime.now(dt.UTC)
+            user.last_login = dt.datetime.now(safe_utc)
             user.save()
         except(models.User.DoesNotExist):
             raise PermissionDenied()
@@ -292,7 +295,7 @@ class ResetPasswordUtils:
             assert user.is_active
 
             user.password_reset_token = utils.Security.generate_password_reset_token()
-            user.password_reset_token_valid_thru = dt.datetime.now(dt.UTC) + dt.timedelta(minutes=30)
+            user.password_reset_token_valid_thru = dt.datetime.now(safe_utc) + dt.timedelta(minutes=30)
             user.save()
             utils.MailSender().send_password_reset_mail(ser.validated_data['email'], user)
             
