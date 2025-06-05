@@ -25,9 +25,28 @@ import user_forms.utils as utils
 from django.conf import settings
 
 
-def uni_response(data={}, errors={}, status=200): 
+def get_error_status_by_error_types(errors_out):
+    if "unique" in [e[1] for e in errors_out]:
+        status = 409
+    elif ("email", "invalid") in [(e[0],e[1]) for e in errors_out]:
+        status = 403
+    else: 
+        status = 400
+
+    return status
+
+
+def uni_response(data={}, errors=[], status=200): 
     return Response({"data": data, "errors": errors}, status=status)
 
+
+def uni_response_serialize_errors(data={}, errors=[], status=200):
+    if errors:
+        errors_out = serialize_error_data_as_list(errors)
+    else:
+        errors_out = []
+
+    return Response({"data": data, "errors": errors_out}, status=status)
 
 def serialize_error_data(serializer_errors):
     errors_out = {}
@@ -40,6 +59,14 @@ def serialize_error_data(serializer_errors):
             all_error_codes.add(err_item.code)
         errors_out[err_group] = err_list_serialized    
     return {"codes": all_error_codes, "errors": errors_out}
+
+def serialize_error_data_as_list(serializer_errors):
+    errors_out = []
+    for err_group in serializer_errors:
+        for err_item in serializer_errors[err_group]:
+            print(f"ERR group {err_group} item: code: {err_item.code} item: ", str(err_item))
+            errors_out.append((err_group, err_item.code, str(err_item)))
+    return errors_out
 
 
 class MailSender:
@@ -175,10 +202,11 @@ class UserFormsRegister:
 
         res = ser.is_valid(raise_exception=False)
         if not res:
-            errors_out = serialize_error_data(ser.errors)
-            print("errors out ", errors_out)
-            status = 403 if "unique" in errors_out["codes"] else 400
-            return utils.uni_response({"errors": errors_out}, status=status)
+            errors_out = serialize_error_data_as_list(ser.errors)
+            print("errors out ", errors_out)            
+            status = get_error_status_by_error_types(errors_out)
+
+            return utils.uni_response({}, errors_out, status=status)
 
         token = utils.Security.generate_register_activation_token()
 
@@ -191,9 +219,9 @@ class UserFormsRegister:
         utils.MailSender().send_registration_mail(ser.validated_data['email'], user)
 
         return utils.uni_response(data={
-                ser.validated_data['email'],
-                ser.validated_data['first_name'],
-                ser.validated_data['last_name']})
+                "email": ser.validated_data['email'],
+                "first_name": ser.validated_data['first_name'],
+                "last_name": ser.validated_data['last_name']})
     
     @staticmethod
     def register_confirm(email: str, register_activation_token: str):
@@ -204,28 +232,45 @@ class UserFormsRegister:
             user.save()
             return utils.uni_response()
         except(models.User.DoesNotExist):
-            return utils.uni_response(errors={"_": [('user_does_not_exist',"User does not exist")]}, status=403)
+            return utils.uni_response({}, [('user_does_not_exist','user_not_found', "User does not exist")], status=403)
         except(Exception):
-            return utils.uni_response(errors={"_": [('user_does_not_exist',"User does not exist")]}, status=403)
+            return utils.uni_response({}, [('user_does_not_exist','user_not_found', "User does not exist")], status=403)
 
 
 class ProfileUtils:
     @staticmethod
     def update_profile(user, data) -> any:
-        ser = sers.UserSerializerForUserPanels(user, 
-            data=data, partial=False, context={'user': user})
+        print("\n\n============ UPDATE_PROFILE DATA ", data,"\n\n\n")
+        with_password = False
+
+        if 'new_password' in data and 'old_password' in data and data['new_password'] != '' and data['old_password'] != '':
+            with_password = True
+            ser = sers.UserWithPasswordSerializerForUserPanels(user, 
+                data=data, partial=False, context={'user': user})
+        else: 
+            ser = sers.UserSerializerForUserPanels(user, 
+                data=data, partial=False, context={'user': user})
+            
         res = ser.is_valid(raise_exception=False)
         if not res:
-            return uni_response(errors=serialize_error_data(ser.errors), status=400)
+            errors_out = serialize_error_data_as_list(ser.errors)
+            status = get_error_status_by_error_types(errors_out)
+            return uni_response(errors=errors_out, status=status)
 
         instance = ser.save()
+        
+        if with_password and ser.validated_data['new_password'] and ser.validated_data['old_password']:
+            print("\n==== PASSWORD set and valid, setting new password... \n")
+            instance.set_password(ser.validated_data['new_password'])
+            instance.save()
+
         return uni_response(data=sers.UserSerializerForUserPanelsReadOnly(instance).data)
 
     def change_password(user, data):
         ser = sers.ChangePasswordSerializer(data=data, context={'user': user})
         res = ser.is_valid(raise_exception=False) 
         if not res:
-            return uni_response(errors=serialize_error_data(ser.errors), status=400)
+            return uni_response(errors=serialize_error_data_as_list(ser.errors), status=400)
 
         user.set_password(ser.validated_data['new_password'])
         user.save()
@@ -253,15 +298,17 @@ class ResetPasswordUtils:
             
             return utils.uni_response()
         except(models.User.DoesNotExist):
-            return utils.uni_response(errors={"_": [('password_reset_error', 'password_reset_error')]}, status=403)
+            return utils.uni_response()   # hiding whether the user exists or not
         except(AssertionError):
-            return utils.uni_response(errors={"_": [('password_reset_error', 'password_reset_error')]}, status=403)
+            return utils.uni_response()   # hiding whether the user exists or not
         except(Exception):
-            return utils.uni_response(errors={"_": [('password_reset_error', 'password_reset_error')]}, status=403)
+            return utils.uni_response()   # hiding whether the user exists or not
 
     def reset_password_confirm(user, data, email, token):
         ser = sers.ResetPasswordConfirmSerializer(data=data)
-        ser.is_valid(raise_exception=True)
+        res = ser.is_valid(raise_exception=False)
+        if not res:
+            return uni_response(errors=serialize_error_data_as_list(ser.errors), status=400)
 
         try: 
             user = models.User.objects.get(password_reset_token=token, email=email)
@@ -273,12 +320,11 @@ class ResetPasswordUtils:
 
             return utils.uni_response()
         except(models.User.DoesNotExist):
-            return utils.uni_response(errors={"_": [
-                ('password_reset_confirm_error', 'password_reset_confirm_error')]}, status=403)
+            return utils.uni_response(errors= [
+                ('password_reset_confirm_error', 'password_reset_confirm_error', 'password_reset_confirm_error')], status=403)
         except(AssertionError):
-            return utils.uni_response(errors={"_": [
-                ('password_reset_confirm_error', 'password_reset_confirm_error')]}, status=403)
+            return utils.uni_response(errors= [
+                ('password_reset_confirm_error', 'password_reset_confirm_error', 'password_reset_confirm_error')], status=403)
         except(Exception):
-            return utils.uni_response(errors={"_": [
-                ('password_reset_confirm_error', 'password_reset_confirm_error')]}, status=403)
-
+            return utils.uni_response(errors= [
+                ('password_reset_confirm_error', 'password_reset_confirm_error', 'password_reset_confirm_error')], status=403)

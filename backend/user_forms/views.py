@@ -15,6 +15,7 @@ import user_forms.perms as perms
 import user_forms.serializers as sers
 import user_forms.models as models
 import user_forms.utils as utils 
+from django.conf import settings
 from .exceptions import Conflict409Exception
 
 
@@ -22,6 +23,18 @@ def xxx():   # just for testing
     return {"hello": "world"}
 
 # ------------------------------------- views -----------------------------------
+
+
+class ServerInfo(APIView):
+    permission_classes = []
+
+
+    def get(self, request, format=None):
+        res = {
+            "server": "ok",
+            "version": settings.VERSION,
+        }
+        return utils.uni_response(res, [], 200)
 
 
 class Login(APIView):
@@ -32,8 +45,10 @@ class Login(APIView):
     def post(self, request, format=None):
         print("\n aaaaaaa, request", request.data, "\n\n")
         ser = sers.LoginSerializer(data=request.data)
-        ser.is_valid(raise_exception=True)
+        res = ser.is_valid(raise_exception=False)
 
+        if not res:
+            return utils.uni_response_serialize_errors({}, errors=ser.errors, status=403)
 
         token, user = utils.UserFormsAuth.generate_token_for_login_data(
             username=ser.validated_data['email'], password=ser.validated_data['password'])
@@ -49,16 +64,15 @@ class Login(APIView):
                 # "is_active": user.is_active,
             }
             print("\n\nRES::: ", res, "aaaaa\n\n")
-            return Response({"data": res}, status=200)
-
-        
-        return utils.uni_response(errors={"_": [("login_error", "Bad credentials")]}, status=403)
+            return utils.uni_response(res, [], 200)        
+        return utils.uni_response({}, errors=[("unauthorized", "unauthorized", "Bad credentials")], status=403)
     
 
 class Logout(APIView):
     permission_classes = [perms.PermIsAuth]
-    def post(self, request, format=None):
+    def post(self, request, format=None):        
         print("\n\n========== LOGOUT REQUEST ", request)
+        print("\n\n========== LOGOUT HEADERS ", request.headers,"\n\n")
         return utils.UserFormsAuth.log_out(request)
 
 
@@ -69,7 +83,10 @@ class ProfileOwn(APIView):
         return self.request.user
 
     def get(self, request, format=None):
+        print("\n\n====== PROFILE OWN - REQUEST HEADERS ", request.headers, "\n\n")
+        print("\n\n REQUEST USER ", request.user)
         obj = self.get_object_or_not_found()
+
         return utils.uni_response(data=sers.UserSerializerForUserPanelsReadOnly(obj).data)
 
     def put(self, request, format=None):

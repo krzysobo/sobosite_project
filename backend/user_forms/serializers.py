@@ -60,6 +60,31 @@ class UserSerializerForUserPanels(serializers.ModelSerializer):
     #     return value
 
 
+class UserWithPasswordSerializerForUserPanels(serializers.ModelSerializer):
+    old_password = serializers.CharField(required=True, write_only=True)
+    new_password = serializers.CharField(required=True, trim_whitespace=False, write_only=True)
+
+    """ used by users (common and admins) in their "my own" panels """
+    class Meta:
+        model = User
+        fields = ['id', 'email', 'first_name', 'last_name', 'old_password', 'new_password']
+        read_only_fields = ['id']
+        optional_fields = ['first_name', 'last_name']
+
+
+    def validate_old_password(self, value):
+        if not self.context['user'].check_password(value):
+            raise serializers.ValidationError("INCORRECT_CUR_PWD")
+        return value
+
+    def validate_new_password(self, value):
+        if not value or not isinstance(value, str) or value.strip() == "":
+            raise serializers.ValidationError("INCORRECT_NEW_PWD")
+        return value
+
+
+
+
 class UserSerializerForUserPanelsReadOnly(serializers.ModelSerializer):
     """ used by users (common and admins) in their "my own" panels """
     class Meta:

@@ -27,6 +27,9 @@ import user_forms.admin_views as views_ad
 
 
 urlpatterns = [
+    # --- server info ---
+    path('info/', views_uf.ServerInfo.as_view()),
+
     # --- for all users ---
     path('user_forms/user/login/', views_uf.Login.as_view()),
     path('user_forms/user/logout/', views_uf.Logout.as_view()),

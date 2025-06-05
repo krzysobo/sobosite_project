@@ -13,6 +13,8 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 import os
 from pathlib import Path
 
+VERSION = "0.0.3"
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -29,7 +31,7 @@ DEBUG = True
 # ALLOWED_HOSTS = []
 DOMAIN = os.environ.get("BACKEND_DOMAIN", "example.com")
 
-x_allowed_hosts_backend = [DOMAIN, 'krzysztofsobolewski.info', 'localhost', '127.0.0.1']
+x_allowed_hosts_backend = [DOMAIN, 'krzysztofsobolewski.info', 'localhost', '127.0.0.1', '192.168.1.177']
 x_allowed_ports_backend = [80, 8000,9000, 3000]
 
 x_allowed_origins_frontend = ['localhost', '127.0.0.1', 'krzysztofsobolewski.info']

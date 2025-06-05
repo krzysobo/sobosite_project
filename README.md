@@ -1,4 +1,5 @@
 # sobosite
+# version 0.0.3
 A template (stub) site to start work with.  Angular frontend, django backend.
 
 On May 11, 2025, the frontend part for Sobosite has been moved to another repository:
