@@ -28,7 +28,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     last_name = models.CharField(max_length=255, null=True,  blank=True, unique=False)
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=False)
-    role = models.CharField(max_length=3, choices=UserRoleE.choices, default=UserRoleE.USER, db_index=True)
+    # role = models.CharField(max_length=3, choices=UserRoleE.choices, default=UserRoleE.USER, db_index=True)
 
     register_activation_token = models.CharField(max_length=600, null=True,  unique=True)
     password_reset_token = models.CharField(max_length=600, null=True,  unique=True)
@@ -56,6 +56,13 @@ class User(AbstractBaseUser, PermissionsMixin):
             return self.STATUS_ACCEPTED
         else:
             return self.STATUS_NEW
+
+    @property 
+    def role(self):
+        if self.is_staff:
+            return self.UserRoleE.ADMIN.value
+        else:
+            return self.UserRoleE.USER.value
 
     @property
     def full_name(self):

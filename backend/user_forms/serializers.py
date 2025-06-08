@@ -9,9 +9,9 @@ class UserSerializerForAdminPanels(serializers.ModelSerializer):
     password = serializers.CharField(required=False, trim_whitespace=True, write_only=True, allow_blank=True)
     class Meta:
         model = User
-        fields = ['id', 'email', 'first_name', 'last_name', 'is_staff', 'is_active', 'status', 'role',
-                  'no_failed_logins', 'failed_is_blocked', 'failed_is_blocked_thru', 'password']
-        read_only_fields = ['id', 'status']
+        fields = ['id', 'email', 'first_name', 'last_name', 'is_staff', 'is_active', 'status',
+                  'no_failed_logins', 'failed_is_blocked', 'failed_is_blocked_thru', 'password', 'role']
+        read_only_fields = ['id', 'status','role']
         write_only_fields= ['password']
 
         #   'created_at', 'updated_at', 
@@ -37,7 +37,8 @@ class CreateUserSerializerForAdminPanels(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['email', 'first_name', 'last_name', 'is_staff',
-                  'is_active', 'role', 'password']
+                  'is_active', 'password']
+        read_only_fields = []
         
     # def validate_email(self, value):
     #     if User.objects.filter(email=value).count() > 0:
@@ -49,8 +50,8 @@ class UserSerializerForUserPanels(serializers.ModelSerializer):
     """ used by users (common and admins) in their "my own" panels """
     class Meta:
         model = User
-        fields = ['id', 'email', 'first_name', 'last_name']
-        read_only_fields = ['id']
+        fields = ['id', 'email', 'first_name', 'last_name','role']
+        read_only_fields = ['id','role']
         optional_fields = ['first_name', 'last_name']
 
     # def validate_email(self, value):
@@ -89,7 +90,7 @@ class UserSerializerForUserPanelsReadOnly(serializers.ModelSerializer):
     """ used by users (common and admins) in their "my own" panels """
     class Meta:
         model = User
-        fields = ['id', 'email', 'first_name', 'last_name', 'status', 'role', 'is_staff']
+        fields = ['id', 'email', 'first_name', 'last_name', 'status',  'is_staff', 'role']
         read_only_fields = fields
 
 

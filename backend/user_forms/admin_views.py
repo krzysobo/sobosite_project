@@ -20,7 +20,7 @@ class AdminUserList(ListAPIView, APIView):
     permission_classes = [perms.PermIsAuth & perms.PermIsAdmin]
     serializer_class = sers.UserSerializerForAdminPanels
     filter_backends = [DjangoFilterBackend, OrderingFilter]
-    filterset_fields = ['role']
+    filterset_fields = ['email']
     ordering_fields = ['email', 'first_name', 'last_name']
     ordering = ['email']
 
@@ -29,7 +29,10 @@ class AdminUserList(ListAPIView, APIView):
     
     def list(self, request, *args, **kwargs):
         resp = super(AdminUserList, self).list(request, *args, **kwargs)
-        return utils.uni_response(data=resp.data)
+        return utils.uni_response(data= {
+            "items": resp.data,
+            "count": -1,
+        })
 
 
 class AdminUserOpsCreate(APIView):
