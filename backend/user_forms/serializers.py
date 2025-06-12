@@ -7,6 +7,7 @@ from user_forms.models import User
 class UserSerializerForAdminPanels(serializers.ModelSerializer):
     """ used by administrators in admin panels etc. """
     password = serializers.CharField(required=False, trim_whitespace=True, write_only=True, allow_blank=True)
+    failed_is_blocked_thru = serializers.SerializerMethodField()
     class Meta:
         model = User
         fields = ['id', 'email', 'first_name', 'last_name', 'is_staff', 'is_active', 'status',
@@ -26,8 +27,14 @@ class UserSerializerForAdminPanels(serializers.ModelSerializer):
     def validate_password(self, value):
         if value and value != "":
             return make_password(value)
-        
+
         return self.context['user'].password
+    
+    def get_failed_is_blocked_thru(self, obj):
+        print("GET GET GET ", obj.failed_is_blocked_thru)
+        if obj.failed_is_blocked_thru is None:
+            return ""
+        return obj.failed_is_blocked_thru
 
 
 class CreateUserSerializerForAdminPanels(serializers.ModelSerializer):

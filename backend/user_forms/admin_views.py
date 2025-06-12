@@ -29,10 +29,13 @@ class AdminUserList(ListAPIView, APIView):
     
     def list(self, request, *args, **kwargs):
         resp = super(AdminUserList, self).list(request, *args, **kwargs)
-        return utils.uni_response(data= {
+        print("RESPONSE DATA - USER LIST ", resp.data, "\n\n")
+        res = utils.uni_response(data= {
             "items": resp.data,
-            "count": -1,
+            "count": len(resp.data),
         })
+        print("\n\nRES: ", res.data, "\n\n")
+        return res 
 
 
 class AdminUserOpsCreate(APIView):
