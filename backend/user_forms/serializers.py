@@ -43,9 +43,9 @@ class CreateUserSerializerForAdminPanels(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['email', 'first_name', 'last_name', 'is_staff',
+        fields = ['email', 'first_name', 'last_name', 'is_staff', 'role',
                   'is_active', 'password']
-        read_only_fields = []
+        read_only_fields = ['role']
         
     # def validate_email(self, value):
     #     if User.objects.filter(email=value).count() > 0:

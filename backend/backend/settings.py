@@ -90,7 +90,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',   # installed later
     'django_filters',   # installed later
     'user_forms',
-    'cms',
+    # 'cms',
     # 'revolap',
 ]
 MIDDLEWARE = [
