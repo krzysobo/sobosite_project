@@ -44,8 +44,11 @@ class AdminUserOpsCreate(APIView):
         ser = sers.CreateUserSerializerForAdminPanels(data=request.data)
         try:
             ser.is_valid(raise_exception=True)
-        except Exception:
-            return utils.uni_response(data=ser.data, errors=utils.serialize_error_data(ser.errors), status=400)
+        except Exception:            
+            errors_list = utils.serialize_error_data_as_list(ser.errors)
+            status = utils.get_error_status_by_error_types(errors_list)
+            return utils.uni_response(data=ser.data, errors=errors_list, status=status)
+        
         instance = ser.save()
         instance.set_password(ser.validated_data['password'])
         instance.save()
@@ -77,10 +80,9 @@ class AdminUserOps(APIView):
         try:
             ser.is_valid(raise_exception=True)
         except Exception:
-            return utils.uni_response(
-                data=sers.UserSerializerForAdminPanels(instance).data, 
-                errors={"_": [('update_error','update_error')]}, 
-                status=400)
+            errors_list = utils.serialize_error_data_as_list(ser.errors)
+            status = utils.get_error_status_by_error_types(errors_list)
+            return utils.uni_response(data=ser.data, errors=errors_list, status=status)
         
         instance = ser.save()
         return utils.uni_response(data=sers.UserSerializerForAdminPanels(instance).data)

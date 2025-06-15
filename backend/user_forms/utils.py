@@ -28,10 +28,10 @@ safe_utc = dt.timezone.utc
 from django.conf import settings
 
 
-def get_error_status_by_error_types(errors_out):
-    if "unique" in [e[1] for e in errors_out]:
+def get_error_status_by_error_types(errors_serialized_list):
+    if "unique" in [e[1] for e in errors_serialized_list]:
         status = 409
-    elif ("email", "invalid") in [(e[0],e[1]) for e in errors_out]:
+    elif ("email", "invalid") in [(e[0],e[1]) for e in errors_serialized_list]:
         status = 403
     else: 
         status = 400
@@ -51,7 +51,7 @@ def uni_response_serialize_errors(data={}, errors=[], status=200):
 
     return Response({"data": data, "errors": errors_out}, status=status)
 
-def serialize_error_data(serializer_errors):
+def group_error_data(serializer_errors):
     errors_out = {}
     all_error_codes = set()
     for err_group in serializer_errors:
